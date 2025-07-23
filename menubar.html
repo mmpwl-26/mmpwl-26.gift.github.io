@@ -67,6 +67,41 @@
       50% { transform: translateY(-20px) scale(1.1); }
     }
 
+    /* Back button */
+    .back-button {
+      position: fixed;
+      top: 30px;
+      left: 30px;
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+      text-decoration: none;
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .back-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .back-button:active {
+      transform: translateY(0) scale(0.95);
+    }
+
     /* Container with glassmorphism */
     #page3 {
       width: 90vw;
@@ -290,6 +325,9 @@
   </style>
 </head>
 <body>
+
+  <a href="password.html" class="back-button">←</a>
+  
   <div id="page3">
     <h1>𝘖𝘶𝘳 𝘔𝘦𝘯𝘶 ♡ ˖ ࣪ !</h1>
     <div class="menu-grid">
