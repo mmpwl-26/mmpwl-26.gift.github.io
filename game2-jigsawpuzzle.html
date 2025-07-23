@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jigsaw Puzzle Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffeef8 0%, #ffe0f0 50%, #ffd4e8 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .start-screen {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .start-screen h1 {
+            color: #e91e63;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #e91e63, #ff6ec7);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+        }
+
+        .game-container {
+            display: none;
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .game-title {
+            color: #e91e63;
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .progress {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .image-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .image-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            object-fit: cover;
+        }
+
+        .image-option.selected {
+            border-color: #e91e63;
+            transform: scale(1.1);
+        }
+
+        .image-option.completed {
+            opacity: 0.6;
+            border-color: #4caf50 !important;
+        }
+
+        .image-option.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #4caf50;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .image-option {
+            position: relative;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .column-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e91e63;
+            margin-bottom: 10px;
+        }
+
+        .puzzle-pieces,
+        .puzzle-grid {
+            width: 280px;
+            height: 280px;
+        }
+
+        .puzzle-pieces {
+            border: 2px dashed #e91e63;
+            border-radius: 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 2px;
+            padding: 5px;
+            background: rgba(233, 30, 99, 0.1);
+        }
+
+        .puzzle-grid {
+            border: 2px solid #e91e63;
+            border-radius: 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 1px;
+            padding: 2px;
+            background: #fff;
+        }
+
+        .puzzle-piece {
+            background-size: 400% 400%;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(233, 30, 99, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .puzzle-piece:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .puzzle-slot {
+            border: 1px dashed #ccc;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            background: rgba(233, 30, 99, 0.05);
+            cursor: pointer;
+        }
+
+        .puzzle-slot.correct {
+            background-color: rgba(76, 175, 80, 0.3);
+            border-color: #4caf50;
+            cursor: not-allowed;
+        }
+
+        .puzzle-slot.correct:hover {
+            cursor: not-allowed;
+        }
+
+        .puzzle-slot.incorrect {
+            background-color: rgba(244, 67, 54, 0.3);
+            border-color: #f44336;
+        }
+
+        .puzzle-slot.filled {
+            background-size: 400% 400%;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #e91e63, #ff6ec7);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #666, #888);
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .popup h2 {
+            color: #e91e63;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .completed-puzzle {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .game-board {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            
+            .puzzle-pieces,
+            .puzzle-grid {
+                width: 300px;
+                height: 300px;
+            }
+            
+            .game-title {
+                font-size: 1.5rem;
+            }
+            
+            .start-screen h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .puzzle-pieces,
+            .puzzle-grid {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .game-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <audio id="bgMusic" src="https://media.vocaroo.com/mp3/1DRJqAESrnTk" preload="auto" loop></audio> 
+
+    <div class="start-screen" id="startScreen">
+        <h1>🧩 Jigsaw Puzzle</h1>
+        <p style="color: #666; margin-bottom: 30px; font-size: 1.1rem;">ประกอบจิ๊กซอว์ 3 ภาพให้เสร็จนะที่รักกก</p>
+        <button class="start-btn" onclick="startGame()">🎮 เริ่มเกมส์</button>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <div class="game-header">
+            <h1 class="game-title">🧩 Jigsaw Puzzle</h1>
+            <div class="progress" id="progress">ภาพที่ 1 จาก 3</div>
+        </div>
+
+        <div class="image-selector" id="imageSelector">
+            <img src="jigsaw1.jpg" class="image-option selected" data-index="0" onclick="selectImage(0)">
+            <img src="jigsaw2.jpg" class="image-option" data-index="1" onclick="selectImage(1)">
+            <img src="jigsaw3.jpg" class="image-option" data-index="2" onclick="selectImage(2)">
+        </div>
+
+        <div class="game-board">
+            <div class="column">
+                <div class="column-title">ชิ้นส่วนจิ๊กซอว์</div>
+                <div class="puzzle-pieces" id="puzzlePieces"></div>
+            </div>
+            
+            <div class="column">
+                <div class="column-title">พื้นที่ประกอบ</div>
+                <div class="puzzle-grid" id="puzzleGrid"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+
+            <button class="btn" onclick="resetCurrentPuzzle()">🔄 เริ่มใหม่</button>
+        </div>
+    </div>
+
+    <div class="popup" id="completionPopup">
+        <div class="popup-content">
+            <h2>🎉 เก่งอีกแล้ว จะเก่งไปถึงไหน</h2>
+            <p style="color: #666; margin-bottom: 30px;">คุณทำจิ๊กซอว์ครบ 3 ภาพเรียบร้อยแล้ว!</p>
+            <div class="popup-buttons">
+                <button class="btn" onclick="playAgain()">🎮 เล่นอีกครั้ง</button>
+                <button class="btn secondary" onclick="goBack()">← ย้อนกลับ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game images - using the uploaded images converted to base64
+        const gameImages = [
+            'jigsaw1.jpg', // Placeholder for image 1
+            'jigsaw2.jpg', // Placeholder for image 2
+            'jigsaw3.jpg'  // Placeholder for image 3
+        ];
+
+        let currentImageIndex = 0;
+        let completedPuzzles = [];
+        let currentPuzzleComplete = false;
+        let pieces = [];
+        let shuffledPieces = [];
+        let correctlyPlacedPieces = new Set(); // Track correctly placed pieces
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            // Start background music
+            const music = document.getElementById('bgMusic');
+            music.play().catch(e => console.log('Audio play failed:', e));
+            
+            initializeGame();
+        }
+
+        function initializeGame() {
+            // Set image options
+            const imageOptions = document.querySelectorAll('.image-option');
+            imageOptions.forEach((img, index) => {
+                img.src = gameImages[index];
+            });
+            
+            selectImage(0);
+        }
+
+        function selectImage(index) {
+            currentImageIndex = index;
+            correctlyPlacedPieces.clear(); // Reset correctly placed pieces for new image
+            
+            // Update visual selection
+            document.querySelectorAll('.image-option').forEach((img, i) => {
+                img.classList.remove('selected');
+                if (i === index && !completedPuzzles.includes(i)) {
+                    img.classList.add('selected');
+                }
+            });
+            
+            // Generate puzzle
+            generatePuzzle();
+            updateProgress();
+        }
+
+        function generatePuzzle() {
+            pieces = [];
+            shuffledPieces = [];
+            currentPuzzleComplete = false;
+            
+            // Create 16 pieces (4x4 grid)
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    const piece = {
+                        id: row * 4 + col,
+                        row: row,
+                        col: col,
+                        correctPosition: row * 4 + col,
+                        backgroundPosition: `${col * 33.333}% ${row * 33.333}%`
+                    };
+                    pieces.push(piece);
+                    shuffledPieces.push({...piece});
+                }
+            }
+            
+            // Shuffle pieces
+            shuffledPieces = shuffledPieces.sort(() => Math.random() - 0.5);
+            
+            renderPuzzle();
+        }
+
+        function renderPuzzle() {
+            const piecesContainer = document.getElementById('puzzlePieces');
+            const gridContainer = document.getElementById('puzzleGrid');
+            
+            // Clear containers
+            piecesContainer.innerHTML = '';
+            gridContainer.innerHTML = '';
+            
+            // Render shuffled pieces
+            shuffledPieces.forEach((piece, index) => {
+                const pieceElement = document.createElement('div');
+                pieceElement.className = 'puzzle-piece';
+                pieceElement.style.backgroundImage = `url(${gameImages[currentImageIndex]})`;
+                pieceElement.style.backgroundPosition = piece.backgroundPosition;
+                pieceElement.dataset.pieceId = piece.id;
+                
+                // Simple click events
+                pieceElement.addEventListener('click', handlePieceClick);
+                pieceElement.addEventListener('touchstart', handleTouchStart);
+                
+                piecesContainer.appendChild(pieceElement);
+            });
+            
+            // Render grid slots
+            for (let i = 0; i < 16; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'puzzle-slot';
+                slot.dataset.slotId = i;
+                
+                // Simple click events
+                slot.addEventListener('click', handleSlotClick);
+                slot.addEventListener('touchstart', handleTouchStart);
+                
+                gridContainer.appendChild(slot);
+            }
+        }
+
+        let selectedPiece = null;
+        let touchStartPos = null;
+        let isDragging = false;
+
+        // Simple click/tap to select and place
+        function handlePieceClick(e) {
+            if (currentPuzzleComplete) return;
+            
+            const piece = e.target;
+            
+            // Clear all previous selections
+            deselectAll();
+            
+            // Select this piece
+            piece.style.border = '3px solid #e91e63';
+            selectedPiece = piece;
+        }
+
+        function handleSlotClick(e) {
+            const slot = e.target;
+            
+            if (currentPuzzleComplete) return;
+            
+            // Don't allow clicking on correctly placed pieces
+            if (slot.classList.contains('correct')) {
+                return;
+            }
+            
+            // If slot is filled and no piece is selected, select this slot's piece for moving
+            if (slot.classList.contains('filled') && !selectedPiece) {
+                selectSlotPiece(slot);
+                return;
+            }
+            
+            // If slot is filled and a piece is selected, swap or move
+            if (slot.classList.contains('filled') && selectedPiece) {
+                // If selecting the same slot, deselect
+                if (slot.classList.contains('selected-slot')) {
+                    deselectAll();
+                    return;
+                }
+                
+                // If it's a different filled slot, swap pieces
+                if (selectedPiece.dataset.fromSlot) {
+                    swapPieces(slot, selectedPiece);
+                } else {
+                    // Selected piece is from pieces area, move existing piece back and place new one
+                    returnPieceToContainer(slot);
+                    const slotId = parseInt(slot.dataset.slotId);
+                    const pieceId = parseInt(selectedPiece.dataset.pieceId);
+                    placePiece(slot, selectedPiece, slotId, pieceId);
+                }
+                return;
+            }
+            
+            // If slot is empty and a piece is selected
+            if (!slot.classList.contains('filled') && selectedPiece) {
+                const slotId = parseInt(slot.dataset.slotId);
+                const pieceId = parseInt(selectedPiece.dataset.pieceId);
+                
+                // If piece is being moved from another slot, clear that slot first
+                if (selectedPiece.dataset.fromSlot) {
+                    const fromSlotId = parseInt(selectedPiece.dataset.fromSlot);
+                    const fromSlot = document.querySelector(`[data-slot-id="${fromSlotId}"]`);
+                    if (fromSlot) {
+                        clearSlot(fromSlot);
+                    }
+                }
+                
+                placePiece(slot, selectedPiece, slotId, pieceId);
+                return;
+            }
+            
+            // If no piece selected, do nothing
+        }
+
+        function selectSlotPiece(slot) {
+            // Don't allow selection of correctly placed pieces
+            if (slot.classList.contains('correct')) {
+                return;
+            }
+            
+            // Clear previous selections
+            deselectAll();
+            
+            // Mark this slot as selected
+            slot.classList.add('selected-slot');
+            
+            // Create a virtual selected piece object
+            const pieceId = parseInt(slot.dataset.originalPieceId);
+            const piece = pieces.find(p => p.id === pieceId);
+            
+            selectedPiece = {
+                dataset: {
+                    pieceId: pieceId,
+                    fromSlot: slot.dataset.slotId
+                },
+                style: {
+                    backgroundImage: slot.style.backgroundImage,
+                    backgroundPosition: slot.style.backgroundPosition
+                }
+            };
+        }
+
+        function swapPieces(slot1, selectedPieceInfo) {
+            const fromSlotId = parseInt(selectedPieceInfo.dataset.fromSlot);
+            const fromSlot = document.querySelector(`[data-slot-id="${fromSlotId}"]`);
+            
+            if (!fromSlot) return;
+            
+            // Don't allow swapping with correctly placed pieces
+            if (slot1.classList.contains('correct') || fromSlot.classList.contains('correct')) {
+                deselectAll();
+                return;
+            }
+            
+            // Get piece info from both slots
+            const piece1Id = parseInt(slot1.dataset.originalPieceId);
+            const piece2Id = parseInt(selectedPieceInfo.dataset.pieceId);
+            
+            const piece1 = pieces.find(p => p.id === piece1Id);
+            const piece2 = pieces.find(p => p.id === piece2Id);
+            
+            // Swap the pieces
+            slot1.style.backgroundImage = `url(${gameImages[currentImageIndex]})`;
+            slot1.style.backgroundPosition = piece2.backgroundPosition;
+            slot1.dataset.originalPieceId = piece2Id;
+            
+            fromSlot.style.backgroundImage = `url(${gameImages[currentImageIndex]})`;
+            fromSlot.style.backgroundPosition = piece1.backgroundPosition;
+            fromSlot.dataset.originalPieceId = piece1Id;
+            
+            deselectAll();
+            
+            // Check correctness after swap
+            checkCorrectness(slot1);
+            checkCorrectness(fromSlot);
+        }
+
+        function clearSlot(slot) {
+            // Don't clear correctly placed pieces
+            if (slot.classList.contains('correct')) {
+                return;
+            }
+            
+            slot.classList.remove('filled', 'correct', 'incorrect', 'selected-slot');
+            slot.style.backgroundImage = '';
+            slot.style.backgroundPosition = '';
+            slot.removeAttribute('data-original-piece-id');
+        }
+
+        function deselectAll() {
+            // Clear piece selections
+            document.querySelectorAll('.puzzle-piece').forEach(p => {
+                p.style.border = '1px solid rgba(233, 30, 99, 0.3)';
+            });
+            
+            // Clear slot selections
+            document.querySelectorAll('.puzzle-slot').forEach(s => {
+                s.classList.remove('selected-slot');
+            });
+            
+            selectedPiece = null;
+        }
+
+        // Touch events for mobile
+        function handleTouchStart(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('puzzle-piece')) {
+                handlePieceClick(e);
+            } else if (e.target.classList.contains('puzzle-slot')) {
+                handleSlotClick(e);
+            }
+        }
+
+        function returnPieceToContainer(slot) {
+            // Don't return correctly placed pieces
+            if (slot.classList.contains('correct')) {
+                return;
+            }
+            
+            const pieceId = parseInt(slot.dataset.originalPieceId);
+            const piece = pieces.find(p => p.id === pieceId);
+            
+            if (piece) {
+                // Create new piece element
+                const pieceElement = document.createElement('div');
+                pieceElement.className = 'puzzle-piece';
+                pieceElement.style.backgroundImage = `url(${gameImages[currentImageIndex]})`;
+                pieceElement.style.backgroundPosition = piece.backgroundPosition;
+                pieceElement.dataset.pieceId = piece.id;
+                
+                // Add event listeners
+                pieceElement.addEventListener('click', handlePieceClick);
+                pieceElement.addEventListener('touchstart', handleTouchStart);
+                
+                // Add back to pieces container
+                document.getElementById('puzzlePieces').appendChild(pieceElement);
+                
+                // Add back to shuffled pieces array
+                shuffledPieces.push({...piece});
+                
+                // Clear the slot
+                clearSlot(slot);
+                
+                // Remove from correctly placed pieces if it was there
+                correctlyPlacedPieces.delete(pieceId);
+            }
+        }
+
+        function placePiece(slot, piece, slotId, pieceId) {
+            // Place the piece in the slot
+            slot.classList.add('filled');
+            slot.style.backgroundImage = piece.style.backgroundImage;
+            slot.style.backgroundPosition = piece.style.backgroundPosition;
+            slot.dataset.originalPieceId = pieceId;
+            
+            // Remove piece from pieces container if it's a real DOM element
+            if (piece.remove) {
+                piece.remove();
+            }
+            
+            // Remove from shuffled pieces array
+            shuffledPieces = shuffledPieces.filter(p => p.id !== pieceId);
+            
+            selectedPiece = null;
+            
+            // Check if this piece is in the correct position
+            checkCorrectness(slot);
+        }
+
+        function checkCorrectness(slot) {
+            const slotId = parseInt(slot.dataset.slotId);
+            const pieceId = parseInt(slot.dataset.originalPieceId);
+            
+            if (slotId === pieceId) {
+                // Correct placement
+                slot.classList.add('correct');
+                slot.classList.remove('incorrect');
+                correctlyPlacedPieces.add(pieceId);
+                
+                // Check if all pieces are correctly placed
+                if (correctlyPlacedPieces.size === 16) {
+                    setTimeout(() => {
+                        checkPuzzleCompletion();
+                    }, 500);
+                }
+            } else {
+                // Incorrect placement
+                slot.classList.add('incorrect');
+                slot.classList.remove('correct');
+                correctlyPlacedPieces.delete(pieceId);
+                
+                // Return incorrect piece after 1.5 seconds
+                setTimeout(() => {
+                    if (slot.classList.contains('incorrect')) {
+                        returnPieceToContainer(slot);
+                    }
+                }, 1500);
+            }
+        }
+
+        function checkPuzzleCompletion() {
+            if (correctlyPlacedPieces.size === 16) {
+                currentPuzzleComplete = true;
+                completedPuzzles.push(currentImageIndex);
+                
+                // Mark puzzle as completed visually
+                const imageOption = document.querySelector(`.image-option[data-index="${currentImageIndex}"]`);
+                if (imageOption) {
+                    imageOption.classList.add('completed');
+                    imageOption.classList.remove('selected');
+                }
+                
+                // Check if all puzzles are completed
+                if (completedPuzzles.length === 3) {
+                    setTimeout(() => {
+                        showCompletionPopup();
+                    }, 1000);
+                } else {
+                    // Move to next incomplete puzzle
+                    setTimeout(() => {
+                        selectNextIncompleteImage();
+                    }, 1500);
+                }
+            }
+        }
+
+        function selectNextIncompleteImage() {
+            for (let i = 0; i < 3; i++) {
+                if (!completedPuzzles.includes(i)) {
+                    selectImage(i);
+                    break;
+                }
+            }
+        }
+
+        function updateProgress() {
+            const progress = document.getElementById('progress');
+            progress.textContent = `ภาพที่ ${currentImageIndex + 1} จาก 3 (เสร็จแล้ว ${completedPuzzles.length} ภาพ)`;
+        }
+
+        function resetCurrentPuzzle() {
+            if (completedPuzzles.includes(currentImageIndex)) return;
+            correctlyPlacedPieces.clear();
+            generatePuzzle();
+        }
+
+        function showCompletionPopup() {
+            document.getElementById('completionPopup').style.display = 'flex';
+        }
+
+        function playAgain() {
+            completedPuzzles = [];
+            currentImageIndex = 0;
+            correctlyPlacedPieces.clear();
+            document.getElementById('completionPopup').style.display = 'none';
+            
+            // Reset image selector visual state
+            document.querySelectorAll('.image-option').forEach((img, i) => {
+                img.classList.remove('selected', 'completed');
+                if (i === 0) {
+                    img.classList.add('selected');
+                }
+            });
+            
+            selectImage(0);
+        }
+
+        function goBack() {
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('completionPopup').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            window.location.href = 'menubar-game.html';
+
+            // Stop music
+            const music = document.getElementById('bgMusic');
+            music.pause();
+            music.currentTime = 0;
+            
+            // Reset game state
+            completedPuzzles = [];
+            currentImageIndex = 0;
+            correctlyPlacedPieces.clear();
+            
+            // Reset image selector visual state
+            document.querySelectorAll('.image-option').forEach((img, i) => {
+                img.classList.remove('selected', 'completed');
+            });
+        }
+
+        // Initialize image options with actual images on page load
+        window.addEventListener('load', function() {
+            // Here you would set the actual base64 data for your images
+            // For now using placeholders - replace with actual image data
+            const actualImages = [
+                'jigsaw1.jpg', // Replace with actual base64 data
+                'jigsaw2.jpg',
+                'jigsaw3.jpg'
+            ];
+            
+            // Update gameImages array with actual images
+            actualImages.forEach((img, index) => {
+                if (img) gameImages[index] = img;
+            });
+        });
+    </script>
+</body>
+</html>

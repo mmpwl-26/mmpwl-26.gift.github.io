@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playlist Toggle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+body {
+  margin: 0;
+  font-family: 'Prompt', sans-serif;
+  background-color: #121212;
+  color: #fff;
+  padding: 20px 15px;
+  min-height: 100vh;
+}
+
+h1 {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 30px;
+  font-size: 1.8em;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+  word-wrap: break-word;
+  line-height: 1.3;
+}
+
+.playlist {
+  max-width: 100%;
+  margin: auto;
+}
+
+.song {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: #1e1e1e;
+  border-radius: 15px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  min-height: 70px;
+}
+
+.song:hover {
+  background-color: #262626;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+.song.playing {
+  background-color: #1db95430;
+  box-shadow: 0 0 15px #1db95480;
+}
+
+.cover {
+  width: 55px;
+  height: 55px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-right: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.info {
+  flex-grow: 1;
+  min-width: 0; /* ป้องกันการล้นขอบ */
+  padding-right: 35px; /* เผื่อพื้นที่สำหรับ indicator */
+}
+
+.title {
+  font-size: 1em;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist {
+  font-size: 0.85em;
+  color: #b3b3b3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playing-indicator {
+  position: absolute;
+  right: 15px;
+  width: 12px;
+  height: 12px;
+  background: #1db954;
+  border-radius: 50%;
+  display: none;
+  box-shadow: 0 0 10px #1db954;
+}
+
+.song.playing .playing-indicator {
+  display: block;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+audio {
+  display: none;
+}
+
+.back-button {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 10px 18px;
+  background-color: #1e1e1e;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 25px;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  touch-action: manipulation; /* ปรับปรุงการสัมผัสบนมือถือ */
+}
+
+.back-button:hover {
+  background-color: #1db954;
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+/* Media Queries สำหรับมือถือ */
+@media screen and (max-width: 480px) {
+  body {
+    padding: 15px 10px;
+  }
+  
+  h1 {
+    font-size: 1.6em;
+    margin-bottom: 25px;
+  }
+  
+  .song {
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  
+  .cover {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+  }
+  
+  .title {
+    font-size: 0.95em;
+  }
+  
+  .artist {
+    font-size: 0.8em;
+  }
+  
+  .back-button {
+    padding: 8px 15px;
+    font-size: 0.85em;
+  }
+}
+
+/* Media Query สำหรับหน้าจอขนาดใหญ่ (มือถือความละเอียดสูง) */
+@media screen and (min-width: 1200px) and (max-width: 1400px) {
+  body {
+    padding: 25px 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  h1 {
+    font-size: 2em;
+    margin-bottom: 35px;
+  }
+  
+  .song {
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    max-width: 100%;
+  }
+  
+  .cover {
+    width: 60px;
+    height: 60px;
+    margin-right: 15px;
+  }
+  
+  .title {
+    font-size: 1.1em;
+  }
+  
+  .artist {
+    font-size: 0.9em;
+  }
+  
+  .playing-indicator {
+    right: 20px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* ปรับปรุงการสัมผัสบนมือถือ */
+.song {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* เพิ่ม smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ปรับปรุงการแสดงผลบนหน้าจอความละเอียดสูง */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .song {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  
+  .song:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+}
+  </style>
+</head>
+<body>
+
+  <a href="menubar.html" class="back-button">← ย้อนกลับ</a>
+
+  <h1>🌱 ៸៸𓂃 𝖯𝗅𝖺𝗒𝗅𝗂𝗌𝗍 💭 彡·˚</h1>
+  
+  <div class="playlist">
+    <div class="song" onclick="togglePlay(this)">
+      <div class="cover">
+        <img src="cover1.JPG" alt="Cover 1">
+      </div>
+      <div class="info">
+        <div class="title">กอด</div>
+        <div class="artist">QLER</div>
+      </div>
+      <div class="playing-indicator"></div>
+      <audio src="QLER - กอด.mp3"></audio>
+    </div>
+
+    <div class="song" onclick="togglePlay(this)">
+      <div class="cover">
+        <img src="cover2.jpg" alt="Cover 2">
+      </div>
+      <div class="info">
+        <div class="title">โลกที่ไม่มีเธอ</div>
+        <div class="artist">PORTRAIT</div>
+      </div>
+      <div class="playing-indicator"></div>
+      <audio src="โลกที่ไม่มีเธอ - PORTRAIT.mp3"></audio>
+    </div>
+
+    <div class="song" onclick="togglePlay(this)">
+      <div class="cover">
+        <img src="cover3.jpg" alt="Cover 3">
+      </div>
+      <div class="info">
+        <div class="title">การเดินทางที่สวยงาม</div>
+        <div class="artist">Billkin</div>
+      </div>
+      <div class="playing-indicator"></div>
+      <audio src="การเดินทางที่สวยงาม - Billkin.mp3"></audio>
+    </div>
+
+    <div class="song" onclick="togglePlay(this)">
+      <div class="cover">
+        <img src="cover7.jpg" alt="Cover 4">
+      </div>
+      <div class="info">
+        <div class="title">โคตรคิดถึง</div>
+        <div class="artist">Porch Pathaseth</div>
+      </div>
+      <div class="playing-indicator"></div>
+      <audio src="Porch Pathaseth - โคตรคิดถึง.mp3"></audio>
+    </div>
+
+    <div class="song" onclick="togglePlay(this)">
+      <div class="cover">
+        <img src="cover4.jpg" alt="Cover 5">
+      </div>
+      <div class="info">
+        <div class="title">ไม่อยากให้เธอไม่สบาย (You)</div>
+        <div class="artist">Three Man Down</div>
+      </div>
+      <div class="playing-indicator"></div>
+      <audio src="ไม่อยากให้เธอไม่สบาย (You) ThreeManDown.mp3"></audio>
+    </div>
+
+    <div class="song" onclick="togglePlay(this)">
+      <div class="cover">
+        <img src="cover6.jpg" alt="Cover 6">
+      </div>
+      <div class="info">
+        <div class="title">ดาวนำทาง (Quiet Night)</div>
+        <div class="artist">loserpop</div>
+      </div>
+      <div class="playing-indicator"></div>
+      <audio src="loserpop - ดาวนำทาง (Quiet Night).mp3"></audio>
+    </div>
+
+    <div class="song" onclick="togglePlay(this)">
+      <div class="cover">
+        <img src="cover5.jpg" alt="Cover 7">
+      </div>
+      <div class="info">
+        <div class="title">จะบอกเธอว่ารัก</div>
+        <div class="artist">The Parkinson</div>
+      </div>
+      <div class="playing-indicator"></div>
+      <audio src="The Parkinson - จะบอกเธอว่ารัก.mp3"></audio>
+    </div>
+
+    <div class="song" onclick="togglePlay(this)">
+      <div class="cover">
+        <img src="cover8.jpg" alt="Cover 8">
+      </div>
+      <div class="info">
+        <div class="title">รักแฟน</div>
+        <div class="artist">BENT</div>
+      </div>
+      <div class="playing-indicator"></div>
+      <audio src="BENT - รักแฟน.mp3"></audio>
+    </div>
+  </div>
+
+  <script>
+    let currentAudio = null;
+    let currentSong = null;
+
+    function togglePlay(songElement) {
+      const audio = songElement.querySelector("audio");
+
+      // ถ้าเพลงเดียวกันถูกกดอีกครั้ง → toggle pause/play
+      if (currentAudio === audio) {
+        if (audio.paused) {
+          audio.play().catch(e => console.log('Audio play failed:', e));
+          songElement.classList.add("playing");
+        } else {
+          audio.pause();
+          songElement.classList.remove("playing");
+        }
+        return;
+      }
+
+      // ถ้ามีเพลงก่อนหน้า → หยุดก่อน
+      if (currentAudio) {
+        currentAudio.pause();
+        if (currentSong) currentSong.classList.remove("playing");
+      }
+
+      // เล่นเพลงใหม่
+      audio.play().catch(e => console.log('Audio play failed:', e));
+      songElement.classList.add("playing");
+
+      // บันทึกสถานะ
+      currentAudio = audio;
+      currentSong = songElement;
+
+      // เมื่อเพลงจบ → เอา class playing ออก
+      audio.onended = () => {
+        songElement.classList.remove("playing");
+        currentAudio = null;
+        currentSong = null;
+      };
+    }
+
+    // ป้องกันการ zoom เมื่อ double tap บนมือถือ
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      var now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
+
+</body>
+</html>
